@@ -2,14 +2,16 @@
 //  CreatControls.m
 //  编程测试_demo
 //
-//  Created by 程磊 on 17/5/10.
+//  Created by chenglei on 17/5/10.
 //  Copyright © 2017年 zw. All rights reserved.
 //
 
 #import "CreatControls.h"
+#import "UIView+Additions.h"
+
 
 typedef NS_ENUM(NSUInteger, AlignmentStyle) {
-    NSTextAlignmentLeftStyle = 0,
+    
     NSTextAlignmentCenterStyle,
     NSTextAlignmentRightStyle,
 };
@@ -35,7 +37,7 @@ typedef NS_ENUM(NSUInteger, AlignmentStyle) {
 {
     // 创建UIView
     self.clView = [UIView new];
-    self.clView.layer.masksToBounds = YES;
+    self.clView.backgroundColor = [UIColor whiteColor];
 
     return self;
 }
@@ -44,6 +46,7 @@ typedef NS_ENUM(NSUInteger, AlignmentStyle) {
     // 创建UILable
     self.clView = [UILabel new];
     self.clView.layer.masksToBounds = YES;// 解决汉字渲染问题
+    self.clView.backgroundColor = [UIColor whiteColor];
 
     return self;
 }
@@ -53,7 +56,8 @@ typedef NS_ENUM(NSUInteger, AlignmentStyle) {
     UITextField *tf = [UITextField new];
     tf.layer.masksToBounds = YES;
     self.clView = tf;
-    
+    self.clView.backgroundColor = [UIColor whiteColor];
+
     return self;
 }
 - (CreatControls<CommonProtocol,AttributeProtocol> *)button
@@ -62,7 +66,17 @@ typedef NS_ENUM(NSUInteger, AlignmentStyle) {
     UIButton *btn = [UIButton new];
     btn.titleLabel.layer.masksToBounds = YES;
     self.clView = btn;
-    
+    self.clView.backgroundColor = [UIColor whiteColor];
+
+    return self;
+}
+- (CreatControls<CommonProtocol,AttributeProtocol> *)imgView
+{
+    // 创建imageView
+    UIImageView *imgView = [UIImageView new];
+    self.clView = imgView;
+    self.clView.backgroundColor = [UIColor whiteColor];
+
     return self;
 }
 
@@ -82,9 +96,18 @@ typedef NS_ENUM(NSUInteger, AlignmentStyle) {
 {
     return ^(CGRect frame){
         [self.clView setFrame:frame];
+
+        return self;
+    };
+}
+- (TagBlock)tag
+{
+    return ^(NSInteger tag){
+        [self.clView setTag:tag];
         
         return self;
     };
+
 }
 - (CornerRadiusBlock)cornerRadius
 {
@@ -157,7 +180,7 @@ typedef NS_ENUM(NSUInteger, AlignmentStyle) {
         return self;
     };
 }
-- (FontBlock)font
+- (FontBlock)setFont
 {
     return ^(UIFont *font){
         if ([self.clView isKindOfClass:[UILabel class]]) {
@@ -175,6 +198,17 @@ typedef NS_ENUM(NSUInteger, AlignmentStyle) {
     };
 }
 
+- (NumpageBlock)numpage
+{
+    return ^(NSInteger num){
+        if ([self.clView isKindOfClass:[UILabel class]]) {
+            UILabel *label = (UILabel *)self.clView;
+            [label setNumberOfLines:num];
+        }
+        
+        return self;
+    };
+}
 - (CreatControls<AttributeProtocol,CommonProtocol> *)left_alignment
 {
     [self setAlignment:NSTextAlignmentLeft];
@@ -194,6 +228,50 @@ typedef NS_ENUM(NSUInteger, AlignmentStyle) {
     return self;
 }
 
+- (CreatControls<AttributeProtocol,CommonProtocol> *)bottom_line
+{
+    NSDictionary *attribtDic = @{NSUnderlineStyleAttributeName: [NSNumber numberWithInteger:NSUnderlineStyleSingle]};
+    [self setLineStyleWith:attribtDic];
+    
+    return self;
+}
+- (CreatControls<AttributeProtocol,CommonProtocol> *)middle_line
+{
+    NSDictionary *attribtDic = @{NSStrikethroughStyleAttributeName: [NSNumber numberWithInteger:NSUnderlineStyleSingle]};
+    [self setLineStyleWith:attribtDic];
+    
+    return self;
+}
+- (CreatControls<AttributeProtocol,CommonProtocol> *)grayline_top
+{
+    UIView *lineView = [[UIView alloc]initWithFrame:CGRectMake(0, 0, self.clView.width, 1)];
+    lineView.backgroundColor = [UIColor groupTableViewBackgroundColor];
+    [self.clView addSubview:lineView];
+    
+    return self;
+}
+- (CreatControls<AttributeProtocol,CommonProtocol> *)grayline_bottom
+{
+    UIView *lineView = [[UIView alloc]initWithFrame:CGRectMake(0, 0, self.clView.width, 1)];
+    lineView.backgroundColor = [UIColor groupTableViewBackgroundColor];
+    lineView.max_y = self.clView.height + 0.5;
+    [self.clView addSubview:lineView];
+
+    return self;
+}
+// 设置划线，传入参数
+- (void)setLineStyleWith:(NSDictionary *)attribtDic
+{
+    if ([self.clView isKindOfClass:[UILabel class]]) {
+        UILabel *label = (UILabel *)self.clView;
+        NSMutableAttributedString *attribtStr = [[NSMutableAttributedString alloc]initWithString:label.text attributes:attribtDic];
+        label.attributedText = attribtStr;
+    }else if ([self.clView isKindOfClass:[UIButton class]]) {
+        UIButton *btn = (UIButton *)self.clView;
+        NSMutableAttributedString *attribtStr = [[NSMutableAttributedString alloc]initWithString:btn.titleLabel.text attributes:attribtDic];
+        btn.titleLabel.attributedText = attribtStr;
+    }
+}
 
 // 传入字体alignment
 - (void)setAlignment:(NSTextAlignment)alignment
@@ -204,14 +282,10 @@ typedef NS_ENUM(NSUInteger, AlignmentStyle) {
     }else if ([self.clView isKindOfClass:[UITextField class]]) {
         UITextField *tf = (UITextField *)self.clView;
         [tf setTextAlignment:alignment];
-    }else if ([self.view isKindOfClass:[UIButton class]]) {
-        UIButton *btn = (UIButton *)self.clView;
-        [btn.titleLabel setTextAlignment:alignment];
     }else if ([self.clView isKindOfClass:[UIButton class]]) {
         UIButton *btn = (UIButton *)self.clView;
         [btn.titleLabel setTextAlignment:alignment];
     }
-
 
 }
 
